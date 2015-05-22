@@ -1,1 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Surviving the Titantic</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Surviving the Titantic">
+  <meta name="author" content="Barrie D. Fitzgerald">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
 
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Surviving the Titantic</h1>
+    <h2>Would you survive or perish on the Titantic</h2>
+    <p>Barrie D. Fitzgerald<br/></p>
+  </hgroup>
+    <a href="https://github.com/barriefitzgerald/titantic_slidify/zipball/gh-pages" class="example">
+     Download
+    </a>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Data Processing and Clean Up</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>-Data was obtained from kaggle.com&#39;s Titantic: Machine Learning from Disaster<br>
+-Training data was loaded and partitioned into 60% for training and 40% crossvalid data set<br>
+-Data clean up began</p>
+
+<pre><code class="r">set.seed(2015)
+train &lt;- read.csv(&quot;C:/Users/bdfitzgerald/Desktop/Data Science Specialist/Developing Data Products/train.csv&quot;)
+intrain &lt;- createDataPartition(train$Survived, p = 0.60, list = FALSE)
+train &lt;- train[intrain,]; crossvalid &lt;- train[-intrain,]
+</code></pre>
+
+<pre><code class="r">colnames(train)
+</code></pre>
+
+<p>[1] &quot;PassengerId&quot; &quot;Survived&quot;    &quot;Pclass&quot;      &quot;Name&quot;        &quot;Sex&quot;<br>
+ [6] &quot;Age&quot;         &quot;SibSp&quot;       &quot;Parch&quot;       &quot;Ticket&quot;      &quot;Fare&quot;<br>
+[11] &quot;Cabin&quot;       &quot;Embarked&quot;   </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Survival and Perish Rates</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>-Survival Rates by Sex</p>
+
+<table><thead>
+<tr>
+<th align="left"></th>
+<th align="right">female</th>
+<th align="right">male</th>
+</tr>
+</thead><tbody>
+<tr>
+<td align="left">0</td>
+<td align="right">0.251</td>
+<td align="right">0.808</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="right">0.749</td>
+<td align="right">0.192</td>
+</tr>
+</tbody></table>
+
+<p>-Survival Rates by Age Bracket</p>
+
+<table><thead>
+<tr>
+<th align="left"></th>
+<th align="right">Adult</th>
+<th align="right">Child</th>
+<th align="right">Older Adult</th>
+<th align="right">Teen</th>
+</tr>
+</thead><tbody>
+<tr>
+<td align="left">0</td>
+<td align="right">0.623</td>
+<td align="right">0.368</td>
+<td align="right">0.698</td>
+<td align="right">0.61</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="right">0.377</td>
+<td align="right">0.632</td>
+<td align="right">0.302</td>
+<td align="right">0.39</td>
+</tr>
+</tbody></table>
+
+<p>-Survival Rates by Ticket Class</p>
+
+<table><thead>
+<tr>
+<th align="left"></th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+</tr>
+</thead><tbody>
+<tr>
+<td align="left">0</td>
+<td align="right">0.394</td>
+<td align="right">0.514</td>
+<td align="right">0.752</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="right">0.606</td>
+<td align="right">0.486</td>
+<td align="right">0.248</td>
+</tr>
+</tbody></table>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Model Algorithm</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>-A simple basic decision tree was generated using the Age Brackets, Sex, and Ticket Class
+<img src="assets/fig/unnamed-chunk-8-1.png" title="plot of chunk unnamed-chunk-8" alt="plot of chunk unnamed-chunk-8" style="display: block; margin: auto;" /></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Data Product</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Using the algorithm, a data product was produced so an individual could find out if he or she would survive or perish if they were on the boat.   </p>
+
+<p><a href="http://barriefitzgerald.shinyapps.io/titantic_survival_prediction/">http://barriefitzgerald.shinyapps.io/titantic_survival_prediction/</a></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Data Processing and Clean Up'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Survival and Perish Rates'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Model Algorithm'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Data Product'>
+         4
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

@@ -1,0 +1,165 @@
+---
+title       : "Surviving the Titantic"
+subtitle    : "Would you survive or perish on the Titantic"
+author      : Barrie D. Fitzgerald
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+github:
+  user: barriefitzgerald
+  repo: titantic_slidify
+---
+
+## Data Processing and Clean Up
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+setwd("C:/Users/bdfitzgerald/Desktop/Data Science Specialist/Developing Data Products")
+library(caret)
+library(rpart)
+library(rattle)
+library(rpart.plot)
+library(RColorBrewer)
+library(lsr)
+```
+
+-Data was obtained from kaggle.com's Titantic: Machine Learning from Disaster  
+-Training data was loaded and partitioned into 60% for training and 40% crossvalid data set  
+-Data clean up began
+```{r,echo=TRUE, results='hide'}
+set.seed(2015)
+train <- read.csv("C:/Users/bdfitzgerald/Desktop/Data Science Specialist/Developing Data Products/train.csv")
+intrain <- createDataPartition(train$Survived, p = 0.60, list = FALSE)
+train <- train[intrain,]; crossvalid <- train[-intrain,]
+```
+```{r, echo=TRUE, results='asis'}
+colnames(train)
+```
+
+--- .class #id 
+
+## Survival and Perish Rates
+
+```{r, echo=FALSE, results='hide'}
+## Functions to clean data
+cleanup <- function(x) {
+        data <- x
+        ## age bracket function
+        age.bracket <- function(x) {
+                train <- x
+                ## separating out the age data
+                age <- as.data.frame(train[, 6])
+                colnames(age) <- "ageraw"
+                ## Age Groups
+                age$age <- age$ageraw
+                age$age[is.na(age$ageraw) == TRUE] <- 999999        
+                age$agebrack <- "Teen"
+                age$agebrack[age$age < 11] <- "Child"
+                age$agebrack[age$age >= 20] <- "Adult"
+                age$agebrack[age$age >= 50] <- "Older Adult"
+                age$agebrack[age$age == 999999] <- "Unknown"
+                ## removing old age data
+                age <- age[, -1]
+                ## remaining data...nothing is done to it
+                data <- train[, -6]
+                ## combining the data back together
+                train <- cbind(data, age)
+        }
+        ## applying the age bracket function
+        data <- age.bracket(data)
+        ## Personal Title Function
+        titles <- function(x) {
+                train <- x
+                ## separating the names out
+                titles <- as.data.frame(train$Name)
+                colnames(titles) <- "names"
+                titles$names <- as.character(titles$names)
+                ## spliting names of indiviuals
+                ## separate function
+                separate <- function(x) {strsplit(x, split='[,.]')[[1]][2]}
+                titles$titles <- sapply(titles$names,
+                                        FUN = separate)
+                titles$titles <- sub(" ", "", titles$titles)
+                ## adjusting the names of the individuals
+                titles$titles[titles$titles %in% c('Mme', 'Mlle')] <- 'Mlle'
+                titles$titles[titles$titles %in% c('Capt', 'Don', 'Major', 'Sir')] <- 'Sir'
+                titles$titles[titles$titles %in% c('Dona', 'Lady', 'the Countess', 'Jonkheer')] <- 'Lady'
+                titles$titles[titles$titles %in% c('Mrs', 'Ms')] <- 'Mrs.Ms'
+                titles$titles <- factor(titles$titles)
+                ## remaining data...nothing is done with it
+                data <- train[,-4]
+                ## combining the data back together
+                train <- cbind(data, titles)
+        }
+        ## applying the titles function
+        data <- titles(data)
+        ## Age adjustment function based on titles
+        age.cleanup <- function(x) {
+                train2 <- x
+                data <- train2[, c(11, 14, 12)]
+                ## adjusting ages based on titles
+                data$agebrack.new <- data$agebrack
+                data$agebrack.new[train2$age == 999999 &
+                                          train2$titles == "Master"] <- "Child"
+                data$agebrack.new[train2$age == 999999 &
+                                          train2$titles == "Mr"] <- "Adult"
+                data$agebrack.new[train2$age == 999999 &
+                                          train2$titles == "Mrs"] <- "Adult"
+                data$agebrack.new[train2$age == 999999 &
+                                          train2$titles == "Miss"] <- "Adult"
+                data$agebrack.new[train2$age == 999999 &
+                                          train2$titles == "Ms"] <- "Adult"
+                data$agebrack.new[train2$age == 999999 &
+                                          train2$titles == "Mrs.Ms"] <- "Adult"
+                ## keeping only the new age brackets
+                data <- as.data.frame(data[, 4])
+                colnames(data) <- "agebrack"
+                ## remaining data...nothing done to it
+                train2 <- train2[, -12]
+                ## combine the data back together
+                train2 <- cbind(train2, data)
+        }
+        ## applying the age bracket clean up function
+        data <- age.cleanup(data)
+}
+train <- cleanup(train)
+```
+-Survival Rates by Sex
+```{r, echo=FALSE}
+knitr::kable(round(prop.table(table(train$Survived, train$Sex), 2),3))
+
+```
+-Survival Rates by Age Bracket
+```{r, echo=FALSE, fig.align='center'}
+knitr::kable(round(prop.table(table(train$Survived, train$agebrack), 2),3))
+
+```
+-Survival Rates by Ticket Class
+```{r, echo=FALSE}
+knitr::kable(round(prop.table(table(train$Survived, train$Pclass), 2),3))
+
+```
+
+--- .class #id 
+
+## Model Algorithm
+-A simple basic decision tree was generated using the Age Brackets, Sex, and Ticket Class
+```{r, echo=FALSE, fig.align='center'}
+## building the model
+model <- rpart(formula = Survived ~ Sex + agebrack + Pclass, 
+               data = train, control=rpart.control(minsplit=2, cp=0), 
+               method = "class")
+## plotting the modelt
+fancyRpartPlot(model)
+```
+
+--- .class #id 
+
+## Data Product
+
+Using the algorithm, a data product was produced so an individual could find out if he or she would survive or perish if they were on the boat.   
+
+http://barriefitzgerald.shinyapps.io/titantic_survival_prediction/
+
+
